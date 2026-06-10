@@ -6,6 +6,7 @@ import {
   sendButtonDM,
   sendTextReplyToComment,
   sendButtonReplyToComment,
+  replyToComment,
 } from '../services/instagram.service.js';
 import { renderTemplate } from '../utils/templates.js';
 import { logger } from '../utils/logger.js';
@@ -80,12 +81,22 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
       content: renderedText,
     }).catch((err) => logger.error({ err }, 'Failed to log DM'));
 
-    // 8. If askEmail, the response already has a postback button.
-    //    The postback handler will take over when the user clicks it.
     logger.info(
       { userId, username, ruleId: rule.id, commentId },
       'DM sent successfully',
     );
+
+    // 8. Public reply on the comment, if configured
+    if (rule.publicReply?.length) {
+      try {
+        const randomReply = rule.publicReply[Math.floor(Math.random() * rule.publicReply.length)];
+        const renderedReply = renderTemplate(randomReply, vars);
+        await replyToComment(commentId, renderedReply);
+        logger.info({ commentId, ruleId: rule.id }, 'Public reply posted');
+      } catch (err) {
+        logger.error({ err, commentId, ruleId: rule.id }, 'Failed to post public reply');
+      }
+    }
   } catch (err) {
     logger.error({ err, userId, ruleId: rule.id }, 'Failed to send DM');
   }
