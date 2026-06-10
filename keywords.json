@@ -39,7 +39,8 @@
     "priority": 2,
     "enabled": true,
     "cooldownMinutes": 60,
-    "askEmail": false,
+    "askEmail": true,
+    "askName": true,
     "response": {
       "type": "button",
       "text": "Hey {{username}}! Great that you want to learn! I have something for you.",
