@@ -28,6 +28,7 @@ export async function handlePostback(event: MetaMessagingEvent): Promise<void> {
 async function handleStartEmail(senderId: string, keywordId: string): Promise<void> {
   try {
     const lead = await getLeadByIgUserId(senderId);
+    const rule = getKeywordRules().find((r) => r.id === keywordId);
 
     if (lead?.email) {
       // Returning user — confirm/change flow
@@ -37,12 +38,12 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
         { type: 'postback', title: 'No, cambiar email', payload: `change_email:${keywordId}` },
       ]);
       await setLeadStatus(senderId, 'email_confirming');
+    } else if (rule?.askName && !lead?.name) {
+      // New user, name+email flow — ask for name first
+      await sendTextDM(senderId, 'Como te llamas?');
+      await setLeadStatus(senderId, 'name_pending');
     } else {
-      // New user — excitement + ask for email
-      await sendTextDM(
-        senderId,
-        'GENIAL! No puedo esperar a que empieces a explorar todo lo que Golem tiene para ti.',
-      );
+      // New user — directly ask for email
       await sendTextDM(
         senderId,
         'Para que pueda enviarte el link, cual es tu direccion de correo electronico?',
