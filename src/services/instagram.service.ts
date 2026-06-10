@@ -160,3 +160,19 @@ export async function getUserProfile(userId: string): Promise<InstagramUserProfi
     }),
   );
 }
+
+
+export async function replyToComment(commentId: string, message: string): Promise<void> {
+  const env = getEnv();
+  logger.debug({ commentId }, 'Replying to comment publicly');
+  await withRetry(() =>
+    fetch(`${API_BASE}/${commentId}/replies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify({ message }),
+    }),
+  );
+}
