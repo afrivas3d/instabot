@@ -27,6 +27,13 @@ export function verifySignature(req: Request, res: Response, next: NextFunction)
   const sigBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expectedSignature);
 
+logger.info({
+  secretPrefix: env.META_APP_SECRET.slice(0, 6),
+  secretLength: env.META_APP_SECRET.length,
+  receivedSig: signature,
+  expectedSig: expectedSignature,
+}, 'DEBUG signature check');
+  
   if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
     logger.warn('Invalid webhook signature');
     res.status(401).json({ error: 'Invalid signature' });
