@@ -21,6 +21,7 @@ export interface KeywordRule {
   cooldownMinutes: number;
   askEmail?: boolean;
   askName?: boolean;
+  publicReply?: string[];
   response: KeywordResponse;
   followUp?: KeywordResponse;
 }
