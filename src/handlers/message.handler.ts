@@ -1,6 +1,6 @@
 import type { MetaMessagingEvent } from '../types/meta.types.js';
 import { logger } from '../utils/logger.js';
-import { getLeadByIgUserId, setLeadEmail, setLeadStatus, upsertLead } from '../services/lead.service.js';
+import { getLeadByIgUserId, setLeadEmail, setLeadName, setLeadStatus, upsertLead } from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 import { sendTextDM, sendButtonDM, getUserProfile } from '../services/instagram.service.js';
 import { sendWelcomeEmail, sendResourceEmail } from '../services/email.service.js';
@@ -31,6 +31,17 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
   try {
     const lead = await getLeadByIgUserId(senderId);
 
+    // 0. Name collection flow
+    if (lead && lead.status === 'name_pending') {
+      const keywordMatch = matchKeyword(text);
+      if (keywordMatch) {
+        await handleKeywordDM(senderId, keywordMatch, lead);
+        return;
+      }
+      await handleNameCollection(senderId, text);
+      return;
+    }
+
     // 1. Email collection flow — but if text matches a keyword, handle as keyword instead
     if (lead && (lead.status === 'email_pending' || lead.status === 'email_confirming' || lead.status === 'email_reminded')) {
       const keywordMatch = matchKeyword(text);
@@ -54,6 +65,20 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
   } catch (err) {
     logger.error({ err, senderId }, 'Error handling message');
   }
+}
+
+async function handleNameCollection(senderId: string, text: string): Promise<void> {
+  // Basic sanity check: reject very long inputs or things that look like emails
+  if (text.length > 80 || EMAIL_REGEX.test(text)) {
+    await sendTextDM(senderId, 'Decime solo tu nombre porfa, asi sé como llamarte :)');
+    return;
+  }
+
+  await setLeadName(senderId, text);
+  await sendTextDM(senderId, `Genial ${text}! Y cual es tu correo electronico para enviarte el link?`);
+  await setLeadStatus(senderId, 'email_pending');
+
+  logger.info({ senderId, name: text }, 'Name collected, asking for email');
 }
 
 async function handleEmailCollection(
