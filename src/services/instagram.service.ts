@@ -11,9 +11,7 @@ export async function sendTextDM(
   text: string,
 ): Promise<InstagramSendMessageResponse> {
   const env = getEnv();
-
   logger.debug({ recipientId }, 'Sending text DM');
-
   return withRetry<InstagramSendMessageResponse>(() =>
     fetch(`${API_BASE}/me/messages`, {
       method: 'POST',
@@ -35,9 +33,7 @@ export async function sendButtonDM(
   buttons: MessageButton[],
 ): Promise<InstagramSendMessageResponse> {
   const env = getEnv();
-
   logger.debug({ recipientId, buttonCount: buttons.length }, 'Sending button DM');
-
   return withRetry<InstagramSendMessageResponse>(() =>
     fetch(`${API_BASE}/me/messages`, {
       method: 'POST',
@@ -71,41 +67,26 @@ export async function sendButtonDM(
   );
 }
 
-export async function getMediaOwner(mediaId: string): Promise<{ id: string; username: string } | null> {
+export async function sendTextReplyToComment(
+  commentId: string,
+  text: string,
+): Promise<InstagramSendMessageResponse> {
   const env = getEnv();
-
-  try {
-    const response = await fetch(
-      `${API_BASE}/${mediaId}?fields=owner{id,username}`,
-      {
-        headers: {
-          Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
-        },
-      },
-    );
-    if (!response.ok) {
-      logger.warn({ mediaId, status: response.status }, 'Failed to get media owner');
-      return null;
-    }
-    const data = (await response.json()) as { owner?: { id: string; username: string } };
-    return data.owner ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export async function getUserProfile(userId: string): Promise<InstagramUserProfile> {
-  const env = getEnv();
-
-  return withRetry<InstagramUserProfile>(() =>
-    fetch(`${API_BASE}/${userId}?fields=id,username,name`, {
+  logger.debug({ commentId }, 'Sending text reply to comment');
+  return withRetry<InstagramSendMessageResponse>(() =>
+    fetch(`${API_BASE}/me/messages`, {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
       },
+      body: JSON.stringify({
+        recipient: { comment_id: commentId },
+        message: { text },
+      }),
     }),
   );
 }
-
 
 export async function sendButtonReplyToComment(
   commentId: string,
@@ -113,6 +94,7 @@ export async function sendButtonReplyToComment(
   buttons: MessageButton[],
 ): Promise<InstagramSendMessageResponse> {
   const env = getEnv();
+  logger.debug({ commentId, buttonCount: buttons.length }, 'Sending button reply to comment');
   return withRetry<InstagramSendMessageResponse>(() =>
     fetch(`${API_BASE}/me/messages`, {
       method: 'POST',
@@ -142,6 +124,39 @@ export async function sendButtonReplyToComment(
           },
         },
       }),
+    }),
+  );
+}
+
+export async function getMediaOwner(mediaId: string): Promise<{ id: string; username: string } | null> {
+  const env = getEnv();
+  try {
+    const response = await fetch(
+      `${API_BASE}/${mediaId}?fields=owner{id,username}`,
+      {
+        headers: {
+          Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
+        },
+      },
+    );
+    if (!response.ok) {
+      logger.warn({ mediaId, status: response.status }, 'Failed to get media owner');
+      return null;
+    }
+    const data = (await response.json()) as { owner?: { id: string; username: string } };
+    return data.owner ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getUserProfile(userId: string): Promise<InstagramUserProfile> {
+  const env = getEnv();
+  return withRetry<InstagramUserProfile>(() =>
+    fetch(`${API_BASE}/${userId}?fields=id,username,name`, {
+      headers: {
+        Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
+      },
     }),
   );
 }
