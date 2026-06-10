@@ -1,7 +1,12 @@
 import type { MetaCommentValue } from '../types/meta.types.js';
 import { matchKeyword } from '../services/keyword.service.js';
 import { isOnCooldown, isRateLimited, recordTrigger } from '../services/cooldown.service.js';
-import { sendTextDM, sendButtonDM } from '../services/instagram.service.js';
+import {
+  sendTextDM,
+  sendButtonDM,
+  sendTextReplyToComment,
+  sendButtonReplyToComment,
+} from '../services/instagram.service.js';
 import { renderTemplate } from '../utils/templates.js';
 import { logger } from '../utils/logger.js';
 import { upsertLead } from '../services/lead.service.js';
@@ -23,12 +28,10 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
 
   // 1. Match against keyword rules
   const rule = matchKeyword(text);
-
   if (!rule) {
     logger.debug({ text }, 'No keyword match');
     return;
   }
-
   logger.info({ ruleId: rule.id, keyword: rule.keyword }, 'Keyword matched');
 
   // 2. Check rate limit
@@ -59,12 +62,12 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
   const vars = { username };
   const renderedText = renderTemplate(rule.response.text, vars);
 
-  // 6. Send DM
+  // 6. Send first reply via comment_id (allowed outside 24h messaging window)
   try {
     if (rule.response.type === 'button' && rule.response.buttons?.length) {
-      await sendButtonDM(userId, renderedText, rule.response.buttons);
+      await sendButtonReplyToComment(commentId, renderedText, rule.response.buttons);
     } else {
-      await sendTextDM(userId, renderedText);
+      await sendTextReplyToComment(commentId, renderedText);
     }
 
     // 7. Record trigger & log DM
@@ -79,7 +82,6 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
 
     // 8. If askEmail, the response already has a postback button.
     //    The postback handler will take over when the user clicks it.
-
     logger.info(
       { userId, username, ruleId: rule.id, commentId },
       'DM sent successfully',
