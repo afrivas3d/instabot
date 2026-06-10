@@ -20,6 +20,7 @@ export interface KeywordRule {
   enabled: boolean;
   cooldownMinutes: number;
   askEmail?: boolean;
+  askName?: boolean;
   response: KeywordResponse;
   followUp?: KeywordResponse;
 }
