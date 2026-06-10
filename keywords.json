@@ -8,6 +8,14 @@
     "enabled": true,
     "cooldownMinutes": 60,
     "askEmail": true,
+    "publicReply": [
+      "Listo {{username}}, te lo dejé por DM! 📩",
+      "Te escribí por privado {{username}} 👀",
+      "Revisa tu DM {{username}}, ahí te dejé todo!",
+      "{{username}} ya te mandé el mensaje, checa tu inbox 📬",
+      "Hecho! Mira tu bandeja de DMs {{username}}",
+      "Te llegó algo por privado {{username}} 😉"
+    ],
     "response": {
       "type": "button",
       "text": "Hey {{username}}! Glad you're interested in the free resource!",
@@ -41,6 +49,14 @@
     "cooldownMinutes": 60,
     "askEmail": true,
     "askName": true,
+    "publicReply": [
+      "Listo {{username}}, te lo dejé por DM! 📩",
+      "Te escribí por privado {{username}} 👀",
+      "Revisa tu DM {{username}}, ahí te dejé todo!",
+      "{{username}} ya te mandé el mensaje, checa tu inbox 📬",
+      "Hecho! Mira tu bandeja de DMs {{username}}",
+      "Te llegó algo por privado {{username}} 😉"
+    ],
     "response": {
       "type": "button",
       "text": "Hey {{username}}! Great that you want to learn! I have something for you.",
