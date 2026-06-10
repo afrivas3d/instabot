@@ -105,3 +105,43 @@ export async function getUserProfile(userId: string): Promise<InstagramUserProfi
     }),
   );
 }
+
+
+export async function sendButtonReplyToComment(
+  commentId: string,
+  text: string,
+  buttons: MessageButton[],
+): Promise<InstagramSendMessageResponse> {
+  const env = getEnv();
+  return withRetry<InstagramSendMessageResponse>(() =>
+    fetch(`${API_BASE}/me/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.INSTAGRAM_PAGE_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify({
+        recipient: { comment_id: commentId },
+        message: {
+          attachment: {
+            type: 'template',
+            payload: {
+              template_type: 'generic',
+              elements: [
+                {
+                  title: text,
+                  buttons: buttons.map((b) => ({
+                    type: b.type,
+                    title: b.title,
+                    url: b.url,
+                    payload: b.payload,
+                  })),
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }),
+  );
+}
