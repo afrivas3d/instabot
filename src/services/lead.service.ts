@@ -24,7 +24,6 @@ export async function upsertLead(data: {
   keywordId?: string;
 }): Promise<Lead> {
   const db = getDb();
-
   const [lead] = await db<Lead[]>`
     INSERT INTO leads (ig_user_id, ig_username, name, source, keyword_id)
     VALUES (${data.igUserId}, ${data.igUsername ?? null}, ${data.name ?? null}, ${data.source ?? null}, ${data.keywordId ?? null})
@@ -36,22 +35,31 @@ export async function upsertLead(data: {
       updated_at = NOW()
     RETURNING *
   `;
-
   logger.debug({ igUserId: data.igUserId, status: lead.status }, 'Lead upserted');
   return lead;
 }
 
 export async function setLeadEmail(igUserId: string, email: string): Promise<Lead> {
   const db = getDb();
-
   const [lead] = await db<Lead[]>`
     UPDATE leads
     SET email = ${email}, status = 'email_collected', updated_at = NOW()
     WHERE ig_user_id = ${igUserId}
     RETURNING *
   `;
-
   logger.info({ igUserId, email }, 'Lead email collected');
+  return lead;
+}
+
+export async function setLeadName(igUserId: string, name: string): Promise<Lead> {
+  const db = getDb();
+  const [lead] = await db<Lead[]>`
+    UPDATE leads
+    SET name = ${name}, updated_at = NOW()
+    WHERE ig_user_id = ${igUserId}
+    RETURNING *
+  `;
+  logger.info({ igUserId, name }, 'Lead name collected');
   return lead;
 }
 
