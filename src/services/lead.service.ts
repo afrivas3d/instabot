@@ -95,3 +95,9 @@ export async function setLeadOptOut(igUserId: string): Promise<void> {
   await db`UPDATE leads SET opted_out = TRUE, status = 'opted_out', updated_at = NOW() WHERE ig_user_id = ${igUserId}`;
   logger.info({ igUserId }, 'Lead opted out');
 }
+
+
+export async function findLeadsByEmail(email: string): Promise<Lead[]> {
+  const db = getDb();
+  return db<Lead[]>`SELECT * FROM leads WHERE email = ${email} AND email IS NOT NULL`;
+}
