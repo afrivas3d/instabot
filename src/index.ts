@@ -6,6 +6,12 @@ import { loadKeywordRules } from './services/keyword.service.js';
 import { initDb } from './services/db.js';
 import { startEmailReminder } from './services/reminder.service.js';
 import { webhookRouter } from './webhooks/router.js';
+import { adminRouter } from './routes/admin.router.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load and validate env vars
 const env = loadEnv();
@@ -14,6 +20,9 @@ const env = loadEnv();
 loadKeywordRules();
 
 const app = express();
+
+// Serve static files (admin dashboard)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Parse JSON body and preserve raw body for signature verification
 app.use(
@@ -35,6 +44,14 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // Webhook routes
 app.use('/webhook', webhookRouter);
+
+// Admin routes
+app.use('/admin', adminRouter);
+
+// Serve admin.html for /admin (in case express.static doesn't catch it)
+app.get('/admin', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+});
 
 // Initialize database and start server
 initDb()
