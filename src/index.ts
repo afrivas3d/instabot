@@ -8,10 +8,8 @@ import { startEmailReminder } from './services/reminder.service.js';
 import { webhookRouter } from './webhooks/router.js';
 import { adminRouter } from './routes/admin.router.js';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.resolve();
 
 // Load and validate env vars
 const env = loadEnv();
