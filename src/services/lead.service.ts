@@ -11,6 +11,7 @@ export interface Lead {
   source: string | null;
   keyword_id: string | null;
   status: string;
+  opted_out: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -87,4 +88,10 @@ export async function getLeadsPendingEmailReminder(): Promise<Lead[]> {
     AND updated_at < NOW() - INTERVAL '10 minutes'
     AND updated_at > NOW() - INTERVAL '15 minutes'
   `;
+}
+
+export async function setLeadOptOut(igUserId: string): Promise<void> {
+  const db = getDb();
+  await db`UPDATE leads SET opted_out = TRUE, status = 'opted_out', updated_at = NOW() WHERE ig_user_id = ${igUserId}`;
+  logger.info({ igUserId }, 'Lead opted out');
 }
