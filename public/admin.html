@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InstaBot Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 16px;
+    }
+
+    #login-screen h1 { font-size: 1.5rem; color: #fff; }
+    #login-screen p { color: #888; font-size: 0.9rem; }
+
+    #login-screen input {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 1rem;
+      width: 300px;
+      outline: none;
+    }
+
+    #login-screen input:focus { border-color: #0ea5e9; }
+
+    #login-screen button {
+      padding: 12px 32px;
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 300px;
+    }
+
+    #login-screen button:hover { background: #0284c7; }
+    #login-error { color: #f87171; font-size: 0.85rem; display: none; }
+
+    /* DASHBOARD */
+    #dashboard { display: none; padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 { font-size: 1.5rem; color: #fff; }
+
+    #logout-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #333;
+      color: #888;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    #logout-btn:hover { border-color: #f87171; color: #f87171; }
+
+    /* STATS CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .card .value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .card .value.teal { color: #0ea5e9; }
+    .card .value.green { color: #4ade80; }
+    .card .value.red { color: #f87171; }
+
+    /* KEYWORD STATS */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .keyword-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .keyword-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .keyword-card .kw-name { font-size: 0.85rem; color: #0ea5e9; font-weight: 600; margin-bottom: 8px; }
+    .keyword-card .kw-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px; }
+    .keyword-card .kw-row span:last-child { color: #e0e0e0; }
+
+    /* LEADS TABLE */
+    .table-wrapper {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .table-header input {
+      padding: 8px 12px;
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      outline: none;
+      width: 220px;
+    }
+
+    .table-header input:focus { border-color: #0ea5e9; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead { background: #111; }
+    th { padding: 10px 14px; text-align: left; color: #888; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td { padding: 10px 14px; border-top: 1px solid #222; vertical-align: middle; }
+    tr:hover td { background: #1f1f1f; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-green { background: #14532d; color: #4ade80; }
+    .badge-blue { background: #0c2a3f; color: #38bdf8; }
+    .badge-yellow { background: #3f2c00; color: #fbbf24; }
+    .badge-red { background: #3f1010; color: #f87171; }
+    .badge-gray { background: #1f1f1f; color: #888; }
+
+    .opted-out-row td { opacity: 0.45; }
+
+    #empty-state { text-align: center; padding: 40px; color: #555; }
+
+    /* LOADING */
+    #loading { text-align: center; padding: 60px; color: #555; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <h1>🤖 InstaBot Dashboard</h1>
+  <p>Ingresa tu Admin API Key para continuar</p>
+  <input type="password" id="api-key-input" placeholder="Admin API Key" />
+  <button onclick="login()">Entrar</button>
+  <span id="login-error">Clave incorrecta. Intentá de nuevo.</span>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <h1>🤖 InstaBot Dashboard</h1>
+    <button id="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </header>
+
+  <!-- METRIC CARDS -->
+  <div class="cards">
+    <div class="card">
+      <div class="label">Total Leads</div>
+      <div class="value teal" id="stat-total">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Email Enviado</div>
+      <div class="value green" id="stat-email-sent">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Conversión</div>
+      <div class="value green" id="stat-conversion">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Opted Out</div>
+      <div class="value red" id="stat-opted-out">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Últimas 24h</div>
+      <div class="value" id="stat-24h">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Últimos 7 días</div>
+      <div class="value" id="stat-7d">—</div>
+    </div>
+  </div>
+
+  <!-- BY KEYWORD -->
+  <div class="section-title">Por keyword</div>
+  <div class="keyword-grid" id="keyword-grid"></div>
+
+  <!-- LEADS TABLE -->
+  <div class="section-title">Leads</div>
+  <div class="table-wrapper">
+    <div class="table-header">
+      <span style="font-weight:600;color:#fff;">Todos los leads</span>
+      <input type="text" id="search-input" placeholder="Buscar por username, email, nombre..." oninput="filterTable()" />
+    </div>
+    <div id="loading">Cargando...</div>
+    <table id="leads-table">
+      <thead>
+        <tr>
+          <th>Usuario IG</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Keyword</th>
+          <th>Source</th>
+          <th>Status</th>
+          <th>Opted Out</th>
+          <th>Creado</th>
+        </tr>
+      </thead>
+      <tbody id="leads-body"></tbody>
+    </table>
+    <div id="empty-state" style="display:none;">No se encontraron leads.</div>
+  </div>
+</div>
+
+<script>
+  let API_KEY = '';
+  let allLeads = [];
+
+  function login() {
+    const key = document.getElementById('api-key-input').value.trim();
+    if (!key) return;
+    API_KEY = key;
+    loadDashboard();
+  }
+
+  document.getElementById('api-key-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') login();
+  });
+
+  function logout() {
+    API_KEY = '';
+    allLeads = [];
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('api-key-input').value = '';
+    document.getElementById('login-error').style.display = 'none';
+  }
+
+  async function loadDashboard() {
+    try {
+      const [statsRes, leadsRes] = await Promise.all([
+        fetch('/admin/stats', { headers: { 'x-admin-key': API_KEY } }),
+        fetch('/admin/leads', { headers: { 'x-admin-key': API_KEY } }),
+      ]);
+
+      if (statsRes.status === 401 || leadsRes.status === 401) {
+        document.getElementById('login-error').style.display = 'block';
+        API_KEY = '';
+        return;
+      }
+
+      const stats = await statsRes.json();
+      const leads = await leadsRes.json();
+
+      allLeads = leads;
+
+      renderStats(stats);
+      renderKeywords(stats.by_keyword);
+      renderLeads(leads);
+
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('login-error').style.display = 'none';
+
+    } catch (err) {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-error').textContent = 'Error de conexión.';
+    }
+  }
+
+  function renderStats(stats) {
+    document.getElementById('stat-total').textContent = stats.total_leads;
+    document.getElementById('stat-email-sent').textContent = stats.total_email_sent;
+    document.getElementById('stat-conversion').textContent = stats.overall_conversion_rate;
+    document.getElementById('stat-opted-out').textContent = stats.total_opted_out;
+    document.getElementById('stat-24h').textContent = stats.leads_last_24h;
+    document.getElementById('stat-7d').textContent = stats.leads_last_7_days;
+  }
+
+  function renderKeywords(byKeyword) {
+    const grid = document.getElementById('keyword-grid');
+    grid.innerHTML = '';
+    if (!byKeyword?.length) {
+      grid.innerHTML = '<p style="color:#555;font-size:0.85rem;">Sin datos por keyword aún.</p>';
+      return;
+    }
+    byKeyword.forEach((k) => {
+      grid.innerHTML += `
+        <div class="keyword-card">
+          <div class="kw-name">${k.keyword_id ?? 'Sin keyword'}</div>
+          <div class="kw-row"><span>Total leads</span><span>${k.total}</span></div>
+          <div class="kw-row"><span>Email enviado</span><span>${k.email_sent}</span></div>
+          <div class="kw-row"><span>Conversión</span><span>${k.conversion_rate}</span></div>
+        </div>
+      `;
+    });
+  }
+
+  function statusBadge(status) {
+    const map = {
+      email_sent: ['badge-green', 'email sent'],
+      email_pending: ['badge-yellow', 'email pending'],
+      email_collected: ['badge-blue', 'email collected'],
+      name_pending: ['badge-yellow', 'name pending'],
+      opted_out: ['badge-red', 'opted out'],
+      new: ['badge-gray', 'new'],
+    };
+    const [cls, label] = map[status] ?? ['badge-gray', status];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('es-EC', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function renderLeads(leads) {
+    const tbody = document.getElementById('leads-body');
+    const empty = document.getElementById('empty-state');
+
+    if (!leads.length) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    tbody.innerHTML = leads.map((l) => `
+      <tr class="${l.opted_out ? 'opted-out-row' : ''}">
+        <td>@${l.ig_username ?? l.ig_user_id}</td>
+        <td>${l.name ?? '—'}</td>
+        <td>${l.email ?? '—'}</td>
+        <td>${l.keyword_id ?? '—'}</td>
+        <td>${l.source ?? '—'}</td>
+        <td>${statusBadge(l.status)}</td>
+        <td>${l.opted_out ? '<span class="badge badge-red">sí</span>' : '<span class="badge badge-gray">no</span>'}</td>
+        <td>${formatDate(l.created_at)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function filterTable() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allLeads.filter((l) =>
+      (l.ig_username ?? '').toLowerCase().includes(q) ||
+      (l.email ?? '').toLowerCase().includes(q) ||
+      (l.name ?? '').toLowerCase().includes(q) ||
+      (l.keyword_id ?? '').toLowerCase().includes(q)
+    );
+    renderLeads(filtered);
+  }
+</script>
+</body>
+</html>
