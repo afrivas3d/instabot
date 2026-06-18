@@ -121,7 +121,7 @@ async function handleEmailCollection(
         { senderId, email: text, otherIgUserId: usedByAnother.ig_user_id },
         'Email already in use by another IG account, blocking',
       );
-      await sendTextDM(senderId, 'Ese email ya esta registrado con otra cuenta de Instagram. Podes enviarme otro?');
+      await sendTextDM(senderId, 'Ese email ya esta registrado con otra cuenta de Instagram. Puedes enviarme otro?');
       return;
     }
   } catch (err) {
