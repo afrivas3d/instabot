@@ -96,8 +96,25 @@ export async function setLeadOptOut(igUserId: string): Promise<void> {
   logger.info({ igUserId }, 'Lead opted out');
 }
 
-
 export async function findLeadsByEmail(email: string): Promise<Lead[]> {
   const db = getDb();
   return db<Lead[]>`SELECT * FROM leads WHERE email = ${email} AND email IS NOT NULL`;
+}
+
+export async function getAllLeads(): Promise<Lead[]> {
+  const db = getDb();
+  return db<Lead[]>`SELECT * FROM leads ORDER BY created_at DESC`;
+}
+
+export async function getLeadCountsByKeyword(): Promise<{ keyword_id: string | null; total: number; email_sent: number }[]> {
+  const db = getDb();
+  return db<{ keyword_id: string | null; total: number; email_sent: number }[]>`
+    SELECT
+      keyword_id,
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE status = 'email_sent')::int AS email_sent
+    FROM leads
+    GROUP BY keyword_id
+    ORDER BY total DESC
+  `;
 }
