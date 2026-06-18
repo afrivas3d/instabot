@@ -10,7 +10,7 @@ import {
 } from '../services/instagram.service.js';
 import { renderTemplate } from '../utils/templates.js';
 import { logger } from '../utils/logger.js';
-import { upsertLead } from '../services/lead.service.js';
+import { getLeadByIgUserId, upsertLead } from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 
 export function maskEmail(email: string): string {
@@ -26,6 +26,17 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
   const username = from.username;
 
   logger.info({ userId, username, text, commentId }, 'Processing comment');
+
+  // 0. Skip if user already opted out
+  try {
+    const existingLead = await getLeadByIgUserId(userId);
+    if (existingLead?.opted_out) {
+      logger.debug({ userId }, 'Lead is opted out, skipping comment');
+      return;
+    }
+  } catch (err) {
+    logger.error({ err, userId }, 'Failed to check opt-out status (continuing)');
+  }
 
   // 1. Match against keyword rules
   const rule = matchKeyword(text);
