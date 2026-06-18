@@ -40,6 +40,10 @@ export async function initDb(): Promise<void> {
   `;
 
   await db`
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS opted_out BOOLEAN NOT NULL DEFAULT FALSE
+  `;
+
+  await db`
     CREATE TABLE IF NOT EXISTS dm_log (
       id SERIAL PRIMARY KEY,
       ig_user_id TEXT NOT NULL,
