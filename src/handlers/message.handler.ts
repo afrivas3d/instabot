@@ -1,6 +1,13 @@
 import type { MetaMessagingEvent } from '../types/meta.types.js';
 import { logger } from '../utils/logger.js';
-import { getLeadByIgUserId, setLeadEmail, setLeadName, setLeadStatus, upsertLead } from '../services/lead.service.js';
+import {
+  getLeadByIgUserId,
+  setLeadEmail,
+  setLeadName,
+  setLeadStatus,
+  setLeadOptOut,
+  upsertLead,
+} from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 import { sendTextDM, sendButtonDM, getUserProfile } from '../services/instagram.service.js';
 import { sendWelcomeEmail, sendResourceEmail } from '../services/email.service.js';
@@ -10,6 +17,13 @@ import { renderTemplate } from '../utils/templates.js';
 import { getEnv } from '../config/env.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const OPT_OUT_WORDS = ['stop', 'baja', 'no quiero mas', 'no quiero más', 'cancelar', 'unsubscribe'];
+
+function isOptOutMessage(text: string): boolean {
+  const normalized = text.trim().toLowerCase();
+  return OPT_OUT_WORDS.some((word) => normalized === word || normalized.includes(word));
+}
 
 export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
   const senderId = event.sender.id;
@@ -31,7 +45,21 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
   try {
     const lead = await getLeadByIgUserId(senderId);
 
-    // 0. Name collection flow
+    // 0. If already opted out, ignore everything
+    if (lead?.opted_out) {
+      logger.debug({ senderId }, 'Lead is opted out, ignoring message');
+      return;
+    }
+
+    // 0.1 Opt-out request
+    if (isOptOutMessage(text)) {
+      await setLeadOptOut(senderId);
+      await sendTextDM(senderId, 'Listo, no te enviaremos mas mensajes automaticos. Si cambias de opinion, escribinos de nuevo.');
+      logger.info({ senderId }, 'User opted out via message');
+      return;
+    }
+
+    // 1. Name collection flow
     if (lead && lead.status === 'name_pending') {
       const keywordMatch = matchKeyword(text);
       if (keywordMatch) {
@@ -42,7 +70,7 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
       return;
     }
 
-    // 1. Email collection flow — but if text matches a keyword, handle as keyword instead
+    // 2. Email collection flow — but if text matches a keyword, handle as keyword instead
     if (lead && (lead.status === 'email_pending' || lead.status === 'email_confirming' || lead.status === 'email_reminded')) {
       const keywordMatch = matchKeyword(text);
       if (keywordMatch) {
@@ -53,14 +81,14 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
       return;
     }
 
-    // 2. Keyword matching (ice breakers, manual keyword DMs)
+    // 3. Keyword matching (ice breakers, manual keyword DMs)
     const rule = matchKeyword(text);
     if (rule) {
       await handleKeywordDM(senderId, rule, lead);
       return;
     }
 
-    // 3. No keyword match — do nothing. This is a normal conversation with the human.
+    // 4. No keyword match — do nothing. This is a normal conversation with the human.
     logger.debug({ senderId, text }, 'No keyword match, ignoring message');
   } catch (err) {
     logger.error({ err, senderId }, 'Error handling message');
