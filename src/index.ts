@@ -18,7 +18,7 @@ loadKeywordRules();
 const app = express();
 
 // Serve static files (admin dashboard)
-app.use(express.static(path.resolve('public')));
+app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // Parse JSON body and preserve raw body for signature verification
 app.use(
@@ -46,7 +46,7 @@ app.use('/admin', adminRouter);
 
 // Serve admin.html for /admin
 app.get('/admin', (_req: Request, res: Response) => {
-  res.sendFile(path.resolve('public', 'admin.html'));
+  res.sendFile(path.resolve(process.cwd(), 'public', 'admin.html'));
 });
 
 // Initialize database and start server
