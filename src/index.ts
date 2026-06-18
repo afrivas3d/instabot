@@ -9,8 +9,6 @@ import { webhookRouter } from './webhooks/router.js';
 import { adminRouter } from './routes/admin.router.js';
 import path from 'node:path';
 
-const __dirname = path.resolve();
-
 // Load and validate env vars
 const env = loadEnv();
 
@@ -20,7 +18,7 @@ loadKeywordRules();
 const app = express();
 
 // Serve static files (admin dashboard)
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.resolve('public')));
 
 // Parse JSON body and preserve raw body for signature verification
 app.use(
@@ -46,9 +44,9 @@ app.use('/webhook', webhookRouter);
 // Admin routes
 app.use('/admin', adminRouter);
 
-// Serve admin.html for /admin (in case express.static doesn't catch it)
+// Serve admin.html for /admin
 app.get('/admin', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+  res.sendFile(path.resolve('public', 'admin.html'));
 });
 
 // Initialize database and start server
