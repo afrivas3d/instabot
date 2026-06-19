@@ -10,7 +10,7 @@ import {
 } from '../services/instagram.service.js';
 import { renderTemplate } from '../utils/templates.js';
 import { logger } from '../utils/logger.js';
-import { getLeadByIgUserId, upsertLead } from '../services/lead.service.js';
+import { getLeadByIgUserId, upsertLead, recordKeywordInteraction } from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 
 export function maskEmail(email: string): string {
@@ -58,7 +58,7 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
     return;
   }
 
-  // 4. Upsert lead in DB
+  // 4. Upsert lead in DB + record interaction
   try {
     await upsertLead({
       igUserId: userId,
@@ -66,6 +66,7 @@ export async function handleComment(comment: MetaCommentValue): Promise<void> {
       source: 'comment',
       keywordId: rule.id,
     });
+    await recordKeywordInteraction(userId, rule.id);
   } catch (err) {
     logger.error({ err, userId }, 'Failed to upsert lead (continuing with DM)');
   }
