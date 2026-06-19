@@ -642,10 +642,10 @@
       document.getElementById('login-error').style.display = 'none';
 
     } catch (err) {
-      document.getElementById('login-error').style.display = 'block';
-      document.getElementById('login-error').textContent = 'Error de conexión.';
-    }
-  }
+  document.getElementById('login-error').style.display = 'block';
+  document.getElementById('login-error').textContent = 'Error: ' + err.message;
+  console.error('Dashboard load error:', err);
+}
 
   // ---------- TABS ----------
   function switchTab(tab) {
