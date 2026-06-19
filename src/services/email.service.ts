@@ -51,7 +51,6 @@ export async function sendResourceEmail(
   resourceUrl: string,
 ): Promise<void> {
   const client = getResend();
-
   const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -88,4 +87,32 @@ export async function sendResourceEmail(
   }
 
   logger.info({ to, fullName, resourceTitle }, 'Resource email sent');
+}
+
+export async function sendCustomEmail(
+  to: string,
+  subject: string,
+  html: string,
+  vars: Record<string, string> = {},
+): Promise<void> {
+  const client = getResend();
+
+  let renderedHtml = html;
+  for (const [key, value] of Object.entries(vars)) {
+    renderedHtml = renderedHtml.replaceAll(`{{${key}}}`, value);
+  }
+
+  const { error } = await client.emails.send({
+    from: getEnv().EMAIL_FROM,
+    to,
+    subject,
+    html: renderedHtml,
+  });
+
+  if (error) {
+    logger.error({ error, to }, 'Failed to send custom email');
+    throw new Error(`Resend error: ${error.message}`);
+  }
+
+  logger.info({ to, subject }, 'Custom email sent');
 }
