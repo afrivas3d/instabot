@@ -38,7 +38,7 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
         { type: 'postback', title: 'No, cambiar email', payload: `change_email:${keywordId}` },
       ]);
       await setLeadStatus(senderId, 'email_confirming');
-    } else if (rule?.askName && !lead?.name) {
+    } else if (rule?.flowType === 'name_and_email' && !lead?.name) {
       // New user, name+email flow — ask for name first
       await sendTextDM(senderId, 'Como te llamas?');
       await setLeadStatus(senderId, 'name_pending');
@@ -51,7 +51,7 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
       await setLeadStatus(senderId, 'email_pending');
     }
 
-    logger.info({ senderId, keywordId }, 'Start email flow initiated');
+    logger.info({ senderId, keywordId, flowType: rule?.flowType }, 'Start email flow initiated');
   } catch (err) {
     logger.error({ err, senderId }, 'Error handling start email postback');
   }
@@ -72,19 +72,21 @@ async function handleConfirmEmail(senderId: string, keywordId: string): Promise<
 
     // Send resource + welcome email
     const env = getEnv();
-    if (env.RESEND_API_KEY) {
+    if (rule?.emailEnabled && rule.emailTemplate && env.RESEND_API_KEY) {
       const username = lead.ig_username ?? 'amigo';
       try {
         if (rule?.followUp?.buttons?.[0]?.url) {
           await sendResourceEmail(lead.email, username, rule.followUp.buttons[0].title, rule.followUp.buttons[0].url);
         }
         await sendWelcomeEmail(lead.email, username);
+        await setLeadStatus(senderId, 'email_sent');
       } catch (err) {
         logger.error({ err }, 'Failed to send emails after confirm');
       }
+    } else {
+      await setLeadStatus(senderId, 'email_collected');
     }
 
-    await setLeadStatus(senderId, 'email_sent');
     logger.info({ senderId, keywordId, email: lead.email }, 'Email confirmed, followUp sent');
   } catch (err) {
     logger.error({ err, senderId }, 'Error handling confirm postback');
