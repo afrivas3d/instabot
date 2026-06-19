@@ -146,10 +146,10 @@ adminRouter.post('/keywords', async (req: Request, res: Response) => {
         id, keyword, aliases, match_type, priority, enabled, cooldown_minutes,
         flow_type, response, follow_up, public_reply, email_enabled, email_template
       ) VALUES (
-        ${b.id}, ${b.keyword}, ${JSON.stringify(b.aliases ?? [])}, ${b.matchType ?? 'contains'},
+        ${b.id}, ${b.keyword}, ${db.json(b.aliases ?? [])}, ${b.matchType ?? 'contains'},
         ${b.priority ?? 1}, ${b.enabled ?? true}, ${b.cooldownMinutes ?? 60},
-        ${b.flowType}, ${JSON.stringify(b.response)}, ${b.followUp ? JSON.stringify(b.followUp) : null},
-        ${b.publicReply ? JSON.stringify(b.publicReply) : null}, ${b.emailEnabled ?? false}, ${b.emailTemplate ?? null}
+        ${b.flowType}, ${db.json(b.response)}, ${b.followUp ? db.json(b.followUp) : null},
+        ${b.publicReply ? db.json(b.publicReply) : null}, ${b.emailEnabled ?? false}, ${b.emailTemplate ?? null}
       )
     `;
 
@@ -177,15 +177,15 @@ adminRouter.put('/keywords/:id', async (req: Request, res: Response) => {
     const result = await db`
       UPDATE keyword_rules SET
         keyword = ${b.keyword},
-        aliases = ${JSON.stringify(b.aliases ?? [])},
+        aliases = ${db.json(b.aliases ?? [])},
         match_type = ${b.matchType ?? 'contains'},
         priority = ${b.priority ?? 1},
         enabled = ${b.enabled ?? true},
         cooldown_minutes = ${b.cooldownMinutes ?? 60},
         flow_type = ${b.flowType},
-        response = ${JSON.stringify(b.response)},
-        follow_up = ${b.followUp ? JSON.stringify(b.followUp) : null},
-        public_reply = ${b.publicReply ? JSON.stringify(b.publicReply) : null},
+        response = ${db.json(b.response)},
+        follow_up = ${b.followUp ? db.json(b.followUp) : null},
+        public_reply = ${b.publicReply ? db.json(b.publicReply) : null},
         email_enabled = ${b.emailEnabled ?? false},
         email_template = ${b.emailTemplate ?? null},
         updated_at = NOW()
