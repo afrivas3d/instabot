@@ -16,6 +16,7 @@ import { getKeywordRules, matchKeyword } from '../services/keyword.service.js';
 import { isOnCooldown, isRateLimited, recordTrigger } from '../services/cooldown.service.js';
 import { renderTemplate } from '../utils/templates.js';
 import { getEnv } from '../config/env.js';
+import { maskEmail } from './comment.handler.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -63,7 +64,7 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
         await handleKeywordDM(senderId, keywordMatch, lead);
         return;
       }
-      await handleNameCollection(senderId, text);
+      await handleNameCollection(senderId, text, lead);
       return;
     }
 
@@ -89,13 +90,31 @@ export async function handleMessage(event: MetaMessagingEvent): Promise<void> {
   }
 }
 
-async function handleNameCollection(senderId: string, text: string): Promise<void> {
+async function handleNameCollection(
+  senderId: string,
+  text: string,
+  lead: NonNullable<Awaited<ReturnType<typeof getLeadByIgUserId>>>,
+): Promise<void> {
   if (text.length > 80 || EMAIL_REGEX.test(text)) {
     await sendTextDM(senderId, 'Decime solo tu nombre porfa, asi sé como llamarte :)');
     return;
   }
 
   await setLeadName(senderId, text);
+
+  // If we already have an email on file, offer to reuse it instead of asking again
+  if (lead.email) {
+    const masked = maskEmail(lead.email);
+    const keywordId = lead.keyword_id ?? '';
+    await sendButtonDM(senderId, `Genial ${text}! Ya tengo tu email ${masked}. Te mando el link ahi?`, [
+      { type: 'postback', title: 'Si, mandame ahi', payload: `confirm_email:${keywordId}` },
+      { type: 'postback', title: 'No, cambiar email', payload: `change_email:${keywordId}` },
+    ]);
+    await setLeadStatus(senderId, 'email_confirming');
+    logger.info({ senderId, name: text }, 'Name collected, reusing existing email');
+    return;
+  }
+
   await sendTextDM(senderId, `Genial ${text}! Y cual es tu correo electronico para enviarte el link?`);
   await setLeadStatus(senderId, 'email_pending');
 
