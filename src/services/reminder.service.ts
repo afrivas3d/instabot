@@ -10,26 +10,23 @@ export function startEmailReminder(): void {
   intervalId = setInterval(async () => {
     try {
       const leads = await getLeadsPendingEmailReminder();
-
       for (const lead of leads) {
         try {
           await sendTextDM(
             lead.ig_user_id,
-            'Ups! Parece que te ocupaste y olvidaste ingresar tu correo electronico.',
+            'Vaina! Parece que te ocupaste y olvidaste enviarme tu correo electronico.',
           );
           await sendTextDM(
             lead.ig_user_id,
-            'Puedo enviarte el link de registro? Ingresa tu correo electronico abajo!',
+            'Todavia puedo enviarte lo que acordamos! Ingresa tu correo electronico abajo!',
           );
           await setLeadStatus(lead.ig_user_id, 'email_reminded');
-
           logDM({
             igUserId: lead.ig_user_id,
             direction: 'outbound',
             messageType: 'reminder',
             content: 'Email reminder',
           }).catch(() => {});
-
           logger.info({ igUserId: lead.ig_user_id }, 'Email reminder sent');
         } catch (err) {
           logger.error({ err, igUserId: lead.ig_user_id }, 'Failed to send email reminder');
