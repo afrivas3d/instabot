@@ -59,6 +59,31 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS dm_log_ig_user_id_idx ON dm_log (ig_user_id)
   `;
 
+  // Keyword rules — managed from the admin dashboard
+  await db`
+    CREATE TABLE IF NOT EXISTS keyword_rules (
+      id TEXT PRIMARY KEY,
+      keyword TEXT NOT NULL,
+      aliases JSONB NOT NULL DEFAULT '[]',
+      match_type TEXT NOT NULL DEFAULT 'contains',
+      priority INTEGER NOT NULL DEFAULT 1,
+      enabled BOOLEAN NOT NULL DEFAULT TRUE,
+      cooldown_minutes INTEGER NOT NULL DEFAULT 60,
+      flow_type TEXT NOT NULL DEFAULT 'instant',
+      response JSONB NOT NULL,
+      follow_up JSONB,
+      public_reply JSONB,
+      email_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+      email_template TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await db`
+    CREATE INDEX IF NOT EXISTS keyword_rules_enabled_idx ON keyword_rules (enabled)
+  `;
+
   logger.info('Database initialized');
 }
 
