@@ -61,7 +61,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     header h1 { font-size: 1.5rem; color: #fff; }
@@ -77,6 +77,31 @@
     }
 
     #logout-btn:hover { border-color: #f87171; color: #f87171; }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active { color: #0ea5e9; border-bottom-color: #0ea5e9; }
+    .tab-btn:hover { color: #fff; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     /* STATS CARDS */
     .cards {
@@ -99,7 +124,6 @@
     .card .value.green { color: #4ade80; }
     .card .value.red { color: #f87171; }
 
-    /* KEYWORD STATS */
     .section-title {
       font-size: 1rem;
       font-weight: 600;
@@ -107,23 +131,23 @@
       margin-bottom: 12px;
     }
 
-    .keyword-grid {
+    .keyword-grid-stats {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
       margin-bottom: 32px;
     }
 
-    .keyword-card {
+    .keyword-card-stat {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
       padding: 16px;
     }
 
-    .keyword-card .kw-name { font-size: 0.85rem; color: #0ea5e9; font-weight: 600; margin-bottom: 8px; }
-    .keyword-card .kw-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px; }
-    .keyword-card .kw-row span:last-child { color: #e0e0e0; }
+    .keyword-card-stat .kw-name { font-size: 0.85rem; color: #0ea5e9; font-weight: 600; margin-bottom: 8px; }
+    .keyword-card-stat .kw-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px; }
+    .keyword-card-stat .kw-row span:last-child { color: #e0e0e0; }
 
     /* LEADS TABLE */
     .table-wrapper {
@@ -139,6 +163,8 @@
       align-items: center;
       padding: 16px 20px;
       border-bottom: 1px solid #2a2a2a;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .table-header input {
@@ -166,6 +192,7 @@
       border-radius: 999px;
       font-size: 0.72rem;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .badge-green { background: #14532d; color: #4ade80; }
@@ -173,13 +200,176 @@
     .badge-yellow { background: #3f2c00; color: #fbbf24; }
     .badge-red { background: #3f1010; color: #f87171; }
     .badge-gray { background: #1f1f1f; color: #888; }
+    .badge-purple { background: #2e1065; color: #c4b5fd; }
 
     .opted-out-row td { opacity: 0.45; }
 
-    #empty-state { text-align: center; padding: 40px; color: #555; }
+    #empty-state, #keywords-empty { text-align: center; padding: 40px; color: #555; }
 
-    /* LOADING */
     #loading { text-align: center; padding: 60px; color: #555; display: none; }
+
+    /* KEYWORDS TAB */
+    .kw-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      padding: 10px 20px;
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: #0284c7; }
+
+    .btn-secondary {
+      padding: 8px 14px;
+      background: transparent;
+      border: 1px solid #333;
+      color: #ccc;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover { border-color: #555; }
+
+    .btn-danger {
+      padding: 8px 14px;
+      background: transparent;
+      border: 1px solid #4c1d1d;
+      color: #f87171;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .btn-danger:hover { background: #2a0f0f; }
+
+    .kw-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .kw-item {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .kw-item.disabled { opacity: 0.5; }
+
+    .kw-item-main { display: flex; flex-direction: column; gap: 6px; }
+    .kw-item-title { font-size: 1rem; font-weight: 600; color: #fff; }
+    .kw-item-sub { font-size: 0.78rem; color: #888; }
+    .kw-item-badges { display: flex; gap: 6px; margin-top: 4px; }
+    .kw-item-actions { display: flex; gap: 8px; }
+
+    /* MODAL */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 40px 16px;
+    }
+
+    #modal {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      padding: 28px;
+    }
+
+    #modal h2 { color: #fff; font-size: 1.2rem; margin-bottom: 20px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+    .form-group .hint { font-size: 0.72rem; color: #666; margin-top: 4px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: #0ea5e9; }
+
+    textarea { resize: vertical; min-height: 70px; }
+    textarea.html-input { min-height: 160px; font-family: 'Courier New', monospace; font-size: 0.78rem; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0ea5e9; }
+    .toggle-row label { font-size: 0.85rem; color: #ddd; }
+
+    fieldset {
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    fieldset legend {
+      font-size: 0.78rem;
+      color: #0ea5e9;
+      font-weight: 600;
+      padding: 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    #form-error {
+      background: #2a0f0f;
+      color: #f87171;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .conditional-block { display: none; }
+    .conditional-block.show { display: block; }
   </style>
 </head>
 <body>
@@ -200,68 +390,201 @@
     <button id="logout-btn" onclick="logout()">Cerrar sesión</button>
   </header>
 
-  <!-- METRIC CARDS -->
-  <div class="cards">
-    <div class="card">
-      <div class="label">Total Leads</div>
-      <div class="value teal" id="stat-total">—</div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-btn-stats" onclick="switchTab('stats')">📊 Stats</button>
+    <button class="tab-btn" id="tab-btn-keywords" onclick="switchTab('keywords')">🔑 Keywords</button>
+  </div>
+
+  <!-- STATS TAB -->
+  <div class="tab-content active" id="tab-stats">
+    <div class="cards">
+      <div class="card">
+        <div class="label">Total Leads</div>
+        <div class="value teal" id="stat-total">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Email Enviado</div>
+        <div class="value green" id="stat-email-sent">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Conversión</div>
+        <div class="value green" id="stat-conversion">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Opted Out</div>
+        <div class="value red" id="stat-opted-out">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Últimas 24h</div>
+        <div class="value" id="stat-24h">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Últimos 7 días</div>
+        <div class="value" id="stat-7d">—</div>
+      </div>
     </div>
-    <div class="card">
-      <div class="label">Email Enviado</div>
-      <div class="value green" id="stat-email-sent">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Conversión</div>
-      <div class="value green" id="stat-conversion">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Opted Out</div>
-      <div class="value red" id="stat-opted-out">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Últimas 24h</div>
-      <div class="value" id="stat-24h">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Últimos 7 días</div>
-      <div class="value" id="stat-7d">—</div>
+
+    <div class="section-title">Por keyword</div>
+    <div class="keyword-grid-stats" id="keyword-grid"></div>
+
+    <div class="section-title">Leads</div>
+    <div class="table-wrapper">
+      <div class="table-header">
+        <span style="font-weight:600;color:#fff;">Todos los leads</span>
+        <input type="text" id="search-input" placeholder="Buscar por username, email, nombre..." oninput="filterTable()" />
+      </div>
+      <div id="loading">Cargando...</div>
+      <table id="leads-table">
+        <thead>
+          <tr>
+            <th>Usuario IG</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Keyword</th>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Opted Out</th>
+            <th>Creado</th>
+          </tr>
+        </thead>
+        <tbody id="leads-body"></tbody>
+      </table>
+      <div id="empty-state" style="display:none;">No se encontraron leads.</div>
     </div>
   </div>
 
-  <!-- BY KEYWORD -->
-  <div class="section-title">Por keyword</div>
-  <div class="keyword-grid" id="keyword-grid"></div>
-
-  <!-- LEADS TABLE -->
-  <div class="section-title">Leads</div>
-  <div class="table-wrapper">
-    <div class="table-header">
-      <span style="font-weight:600;color:#fff;">Todos los leads</span>
-      <input type="text" id="search-input" placeholder="Buscar por username, email, nombre..." oninput="filterTable()" />
+  <!-- KEYWORDS TAB -->
+  <div class="tab-content" id="tab-keywords">
+    <div class="kw-toolbar">
+      <span style="color:#888;font-size:0.85rem;">Gestiona las palabras clave y sus flujos de respuesta</span>
+      <button class="btn-primary" onclick="openCreateModal()">+ Nueva Keyword</button>
     </div>
-    <div id="loading">Cargando...</div>
-    <table id="leads-table">
-      <thead>
-        <tr>
-          <th>Usuario IG</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Keyword</th>
-          <th>Source</th>
-          <th>Status</th>
-          <th>Opted Out</th>
-          <th>Creado</th>
-        </tr>
-      </thead>
-      <tbody id="leads-body"></tbody>
-    </table>
-    <div id="empty-state" style="display:none;">No se encontraron leads.</div>
+
+    <div class="kw-list" id="kw-list"></div>
+    <div id="keywords-empty" style="display:none;">No hay keywords creadas todavía. Crea la primera con el botón de arriba.</div>
+  </div>
+</div>
+
+<!-- MODAL: Create / Edit Keyword -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2 id="modal-title">Nueva Keyword</h2>
+    <div id="form-error"></div>
+
+    <form id="kw-form" onsubmit="return false;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID único (slug)</label>
+          <input type="text" id="f-id" placeholder="ej: video_youtube" />
+          <div class="hint">No se puede cambiar luego de creado</div>
+        </div>
+        <div class="form-group">
+          <label>Keyword principal</label>
+          <input type="text" id="f-keyword" placeholder="ej: VIDEO" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Aliases (separados por coma)</label>
+        <input type="text" id="f-aliases" placeholder="ej: YOUTUBE, TUTORIAL, CLIP" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de match</label>
+          <select id="f-matchtype">
+            <option value="contains">Contains (contiene)</option>
+            <option value="exact">Exact (exacto)</option>
+            <option value="word_boundary">Word boundary (palabra completa)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prioridad</label>
+          <input type="number" id="f-priority" value="1" min="1" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cooldown (minutos)</label>
+          <input type="number" id="f-cooldown" value="60" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Tipo de flujo</label>
+          <select id="f-flowtype" onchange="onFlowTypeChange()">
+            <option value="instant">Instantáneo (sin pedir nada)</option>
+            <option value="email_only">Solo email</option>
+            <option value="name_and_email">Nombre + email</option>
+          </select>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend>Respuesta inicial (al comentar)</legend>
+        <div class="form-group">
+          <label>Texto del mensaje</label>
+          <textarea id="f-response-text" placeholder="Hey {{username}}! ..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Texto del botón</label>
+            <input type="text" id="f-response-btn-title" placeholder="ej: Ver el video" />
+          </div>
+          <div class="form-group">
+            <label id="f-response-btn-label">URL (si es instantáneo)</label>
+            <input type="text" id="f-response-btn-url" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="hint" id="f-response-hint">Flujo instantáneo: el botón lleva directo al link, sin pedir datos.</div>
+      </fieldset>
+
+      <fieldset class="conditional-block" id="block-followup">
+        <legend>Entrega final (después de pedir datos)</legend>
+        <div class="form-group">
+          <label>Texto del mensaje</label>
+          <textarea id="f-followup-text" placeholder="Aqui esta tu link..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Texto del botón</label>
+            <input type="text" id="f-followup-btn-title" placeholder="ej: Ver el recurso" />
+          </div>
+          <div class="form-group">
+            <label>URL del recurso</label>
+            <input type="text" id="f-followup-btn-url" placeholder="https://..." />
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-group">
+        <label>Respuestas públicas aleatorias (una por línea, opcional)</label>
+        <textarea id="f-publicreply" placeholder="Listo {{username}}, te lo deje por DM!&#10;Revisa tu DM {{username}}"></textarea>
+        <div class="hint">El bot elige una al azar para responder públicamente el comentario</div>
+      </div>
+
+      <div class="toggle-row">
+        <input type="checkbox" id="f-email-enabled" onchange="onEmailToggle()" />
+        <label for="f-email-enabled">Enviar también un email (via Resend)</label>
+      </div>
+
+      <div class="form-group conditional-block" id="block-email-template">
+        <label>HTML del email (obligatorio si el email está activo)</label>
+        <textarea class="html-input" id="f-email-template" placeholder="<html>...&#10;Podes usar {{username}} y {{name}} dentro del HTML&#10;</html>"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="saveKeyword()">Guardar</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
   let API_KEY = '';
   let allLeads = [];
+  let allKeywords = [];
+  let editingId = null; // null = creating, string = editing
 
   function login() {
     const key = document.getElementById('api-key-input').value.trim();
@@ -277,20 +600,26 @@
   function logout() {
     API_KEY = '';
     allLeads = [];
+    allKeywords = [];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('api-key-input').value = '';
     document.getElementById('login-error').style.display = 'none';
   }
 
+  function authHeaders() {
+    return { 'x-admin-key': API_KEY, 'Content-Type': 'application/json' };
+  }
+
   async function loadDashboard() {
     try {
-      const [statsRes, leadsRes] = await Promise.all([
-        fetch('/admin/stats', { headers: { 'x-admin-key': API_KEY } }),
-        fetch('/admin/leads', { headers: { 'x-admin-key': API_KEY } }),
+      const [statsRes, leadsRes, kwRes] = await Promise.all([
+        fetch('/admin/stats', { headers: authHeaders() }),
+        fetch('/admin/leads', { headers: authHeaders() }),
+        fetch('/admin/keywords', { headers: authHeaders() }),
       ]);
 
-      if (statsRes.status === 401 || leadsRes.status === 401) {
+      if (statsRes.status === 401 || leadsRes.status === 401 || kwRes.status === 401) {
         document.getElementById('login-error').style.display = 'block';
         API_KEY = '';
         return;
@@ -298,12 +627,15 @@
 
       const stats = await statsRes.json();
       const leads = await leadsRes.json();
+      const keywords = await kwRes.json();
 
       allLeads = leads;
+      allKeywords = keywords;
 
       renderStats(stats);
-      renderKeywords(stats.by_keyword);
+      renderKeywordStats(stats.by_keyword);
       renderLeads(leads);
+      renderKeywordList(keywords);
 
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
@@ -315,6 +647,15 @@
     }
   }
 
+  // ---------- TABS ----------
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
+    document.getElementById('tab-btn-' + tab).classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  // ---------- STATS ----------
   function renderStats(stats) {
     document.getElementById('stat-total').textContent = stats.total_leads;
     document.getElementById('stat-email-sent').textContent = stats.total_email_sent;
@@ -324,7 +665,7 @@
     document.getElementById('stat-7d').textContent = stats.leads_last_7_days;
   }
 
-  function renderKeywords(byKeyword) {
+  function renderKeywordStats(byKeyword) {
     const grid = document.getElementById('keyword-grid');
     grid.innerHTML = '';
     if (!byKeyword?.length) {
@@ -333,7 +674,7 @@
     }
     byKeyword.forEach((k) => {
       grid.innerHTML += `
-        <div class="keyword-card">
+        <div class="keyword-card-stat">
           <div class="kw-name">${k.keyword_id ?? 'Sin keyword'}</div>
           <div class="kw-row"><span>Total leads</span><span>${k.total}</span></div>
           <div class="kw-row"><span>Email enviado</span><span>${k.email_sent}</span></div>
@@ -346,8 +687,8 @@
   function statusBadge(status) {
     const map = {
       email_sent: ['badge-green', 'email sent'],
-      email_pending: ['badge-yellow', 'email pending'],
       email_collected: ['badge-blue', 'email collected'],
+      email_pending: ['badge-yellow', 'email pending'],
       name_pending: ['badge-yellow', 'name pending'],
       opted_out: ['badge-red', 'opted out'],
       new: ['badge-gray', 'new'],
@@ -397,6 +738,269 @@
       (l.keyword_id ?? '').toLowerCase().includes(q)
     );
     renderLeads(filtered);
+  }
+
+  // ---------- KEYWORDS LIST ----------
+  function flowTypeBadge(flowType) {
+    const map = {
+      instant: ['badge-purple', '⚡ Instantáneo'],
+      email_only: ['badge-blue', '✉️ Solo email'],
+      name_and_email: ['badge-green', '👤 Nombre + email'],
+    };
+    const [cls, label] = map[flowType] ?? ['badge-gray', flowType];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function renderKeywordList(keywords) {
+    const list = document.getElementById('kw-list');
+    const empty = document.getElementById('keywords-empty');
+
+    if (!keywords.length) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    list.innerHTML = keywords.map((k) => `
+      <div class="kw-item ${k.enabled ? '' : 'disabled'}">
+        <div class="kw-item-main">
+          <div class="kw-item-title">${k.keyword} <span style="color:#555;font-weight:400;">(${k.id})</span></div>
+          <div class="kw-item-sub">Aliases: ${(k.aliases || []).join(', ') || '—'} · Prioridad ${k.priority} · Cooldown ${k.cooldownMinutes}min</div>
+          <div class="kw-item-badges">
+            ${flowTypeBadge(k.flowType)}
+            ${k.emailEnabled ? '<span class="badge badge-yellow">📧 Email activo</span>' : ''}
+            ${k.enabled ? '<span class="badge badge-green">Activa</span>' : '<span class="badge badge-gray">Inactiva</span>'}
+          </div>
+        </div>
+        <div class="kw-item-actions">
+          <button class="btn-secondary" onclick="openEditModal('${k.id}')">Editar</button>
+          <button class="btn-secondary" onclick="toggleKeyword('${k.id}')">${k.enabled ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn-danger" onclick="deleteKeyword('${k.id}', '${k.keyword}')">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function toggleKeyword(id) {
+    try {
+      const res = await fetch(`/admin/keywords/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      await refreshKeywords();
+    } catch (err) {
+      alert('Error al cambiar el estado de la keyword');
+    }
+  }
+
+  async function deleteKeyword(id, keyword) {
+    if (!confirm(`¿Eliminar la keyword "${keyword}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      const res = await fetch(`/admin/keywords/${id}`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      await refreshKeywords();
+    } catch (err) {
+      alert('Error al eliminar la keyword');
+    }
+  }
+
+  async function refreshKeywords() {
+    const res = await fetch('/admin/keywords', { headers: authHeaders() });
+    allKeywords = await res.json();
+    renderKeywordList(allKeywords);
+  }
+
+  // ---------- MODAL FORM ----------
+  function onFlowTypeChange() {
+    const flowType = document.getElementById('f-flowtype').value;
+    const followupBlock = document.getElementById('block-followup');
+    const urlLabel = document.getElementById('f-response-btn-label');
+    const hint = document.getElementById('f-response-hint');
+
+    if (flowType === 'instant') {
+      followupBlock.classList.remove('show');
+      urlLabel.textContent = 'URL (link directo al recurso)';
+      hint.textContent = 'Flujo instantáneo: el botón lleva directo al link, sin pedir datos. Se registra el lead solo para estadísticas.';
+    } else {
+      followupBlock.classList.add('show');
+      urlLabel.textContent = 'URL (no se usa en este flujo, dejar vacío)';
+      hint.textContent = 'Este flujo pide datos antes de entregar el link — el link real va en "Entrega final" más abajo.';
+    }
+  }
+
+  function onEmailToggle() {
+    const enabled = document.getElementById('f-email-enabled').checked;
+    const block = document.getElementById('block-email-template');
+    if (enabled) {
+      block.classList.add('show');
+    } else {
+      block.classList.remove('show');
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('f-id').value = '';
+    document.getElementById('f-id').disabled = false;
+    document.getElementById('f-keyword').value = '';
+    document.getElementById('f-aliases').value = '';
+    document.getElementById('f-matchtype').value = 'contains';
+    document.getElementById('f-priority').value = '1';
+    document.getElementById('f-cooldown').value = '60';
+    document.getElementById('f-flowtype').value = 'instant';
+    document.getElementById('f-response-text').value = '';
+    document.getElementById('f-response-btn-title').value = '';
+    document.getElementById('f-response-btn-url').value = '';
+    document.getElementById('f-followup-text').value = '';
+    document.getElementById('f-followup-btn-title').value = '';
+    document.getElementById('f-followup-btn-url').value = '';
+    document.getElementById('f-publicreply').value = '';
+    document.getElementById('f-email-enabled').checked = false;
+    document.getElementById('f-email-template').value = '';
+    document.getElementById('form-error').style.display = 'none';
+    onFlowTypeChange();
+    onEmailToggle();
+  }
+
+  function openCreateModal() {
+    editingId = null;
+    resetForm();
+    document.getElementById('modal-title').textContent = 'Nueva Keyword';
+    document.getElementById('modal-overlay').style.display = 'flex';
+  }
+
+  function openEditModal(id) {
+    const k = allKeywords.find((kw) => kw.id === id);
+    if (!k) return;
+
+    editingId = id;
+    resetForm();
+    document.getElementById('modal-title').textContent = 'Editar Keyword';
+
+    document.getElementById('f-id').value = k.id;
+    document.getElementById('f-id').disabled = true;
+    document.getElementById('f-keyword').value = k.keyword;
+    document.getElementById('f-aliases').value = (k.aliases || []).join(', ');
+    document.getElementById('f-matchtype').value = k.matchType;
+    document.getElementById('f-priority').value = k.priority;
+    document.getElementById('f-cooldown').value = k.cooldownMinutes;
+    document.getElementById('f-flowtype').value = k.flowType;
+
+    document.getElementById('f-response-text').value = k.response?.text ?? '';
+    document.getElementById('f-response-btn-title').value = k.response?.buttons?.[0]?.title ?? '';
+    document.getElementById('f-response-btn-url').value = k.response?.buttons?.[0]?.url ?? '';
+
+    if (k.followUp) {
+      document.getElementById('f-followup-text').value = k.followUp.text ?? '';
+      document.getElementById('f-followup-btn-title').value = k.followUp.buttons?.[0]?.title ?? '';
+      document.getElementById('f-followup-btn-url').value = k.followUp.buttons?.[0]?.url ?? '';
+    }
+
+    document.getElementById('f-publicreply').value = (k.publicReply || []).join('\n');
+    document.getElementById('f-email-enabled').checked = !!k.emailEnabled;
+    document.getElementById('f-email-template').value = k.emailTemplate ?? '';
+
+    onFlowTypeChange();
+    onEmailToggle();
+
+    document.getElementById('modal-overlay').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+  }
+
+  function showFormError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function saveKeyword() {
+    const id = document.getElementById('f-id').value.trim();
+    const keyword = document.getElementById('f-keyword').value.trim();
+    const aliases = document.getElementById('f-aliases').value.split(',').map(s => s.trim()).filter(Boolean);
+    const matchType = document.getElementById('f-matchtype').value;
+    const priority = parseInt(document.getElementById('f-priority').value, 10) || 1;
+    const cooldownMinutes = parseInt(document.getElementById('f-cooldown').value, 10) || 0;
+    const flowType = document.getElementById('f-flowtype').value;
+
+    const responseText = document.getElementById('f-response-text').value.trim();
+    const responseBtnTitle = document.getElementById('f-response-btn-title').value.trim();
+    const responseBtnUrl = document.getElementById('f-response-btn-url').value.trim();
+
+    const publicReplyRaw = document.getElementById('f-publicreply').value.trim();
+    const publicReply = publicReplyRaw ? publicReplyRaw.split('\n').map(s => s.trim()).filter(Boolean) : null;
+
+    const emailEnabled = document.getElementById('f-email-enabled').checked;
+    const emailTemplate = document.getElementById('f-email-template').value.trim();
+
+    if (!id || !keyword || !responseText || !responseBtnTitle) {
+      showFormError('Completa al menos: ID, keyword, texto de respuesta y texto del botón.');
+      return;
+    }
+
+    if (emailEnabled && !emailTemplate) {
+      showFormError('Si el email está activo, debes pegar el HTML del email.');
+      return;
+    }
+
+    let response, followUp = null;
+
+    if (flowType === 'instant') {
+      if (!responseBtnUrl) {
+        showFormError('El flujo instantáneo necesita una URL en el botón de respuesta.');
+        return;
+      }
+      response = {
+        type: 'button',
+        text: responseText,
+        buttons: [{ type: 'web_url', title: responseBtnTitle, url: responseBtnUrl }],
+      };
+    } else {
+      response = {
+        type: 'button',
+        text: responseText,
+        buttons: [{ type: 'postback', title: responseBtnTitle, payload: `start_email:${id}` }],
+      };
+
+      const followUpText = document.getElementById('f-followup-text').value.trim();
+      const followUpBtnTitle = document.getElementById('f-followup-btn-title').value.trim();
+      const followUpBtnUrl = document.getElementById('f-followup-btn-url').value.trim();
+
+      if (!followUpText || !followUpBtnTitle || !followUpBtnUrl) {
+        showFormError('Para este flujo, completa el texto y botón de "Entrega final".');
+        return;
+      }
+
+      followUp = {
+        type: 'button',
+        text: followUpText,
+        buttons: [{ type: 'web_url', title: followUpBtnTitle, url: followUpBtnUrl }],
+      };
+    }
+
+    const payload = {
+      id, keyword, aliases, matchType, priority, enabled: true, cooldownMinutes,
+      flowType, response, followUp, publicReply,
+      emailEnabled, emailTemplate: emailEnabled ? emailTemplate : null,
+    };
+
+    try {
+      const url = editingId ? `/admin/keywords/${editingId}` : '/admin/keywords';
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showFormError(data.error || 'Error al guardar.');
+        return;
+      }
+
+      closeModal();
+      await refreshKeywords();
+    } catch (err) {
+      showFormError('Error de conexión al guardar.');
+    }
   }
 </script>
 </body>
