@@ -12,9 +12,6 @@ import path from 'node:path';
 // Load and validate env vars
 const env = loadEnv();
 
-// Load keyword rules
-loadKeywordRules();
-
 const app = express();
 
 // Serve static files (admin dashboard)
@@ -49,8 +46,9 @@ app.get('/admin', (_req: Request, res: Response) => {
   res.sendFile(path.resolve(process.cwd(), 'public', 'admin.html'));
 });
 
-// Initialize database and start server
+// Initialize database, load keyword rules, and start server
 initDb()
+  .then(() => loadKeywordRules())
   .then(() => {
     startEmailReminder();
     app.listen(env.PORT, '0.0.0.0', () => {
