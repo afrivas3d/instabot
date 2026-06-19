@@ -118,3 +118,21 @@ export async function getLeadCountsByKeyword(): Promise<{ keyword_id: string | n
     ORDER BY total DESC
   `;
 }
+
+export async function recordKeywordInteraction(igUserId: string, keywordId: string): Promise<void> {
+  const db = getDb();
+  await db`
+    INSERT INTO lead_keyword_interactions (ig_user_id, keyword_id)
+    VALUES (${igUserId}, ${keywordId})
+  `;
+}
+
+export async function getKeywordInteractionsByIgUserId(igUserId: string): Promise<{ keyword_id: string; created_at: Date }[]> {
+  const db = getDb();
+  return db<{ keyword_id: string; created_at: Date }[]>`
+    SELECT keyword_id, created_at
+    FROM lead_keyword_interactions
+    WHERE ig_user_id = ${igUserId}
+    ORDER BY created_at DESC
+  `;
+}
