@@ -11,6 +11,8 @@ export interface KeywordResponse {
   buttons?: MessageButton[];
 }
 
+export type FlowType = 'instant' | 'email_only' | 'name_and_email';
+
 export interface KeywordRule {
   id: string;
   keyword: string;
@@ -19,9 +21,10 @@ export interface KeywordRule {
   priority: number;
   enabled: boolean;
   cooldownMinutes: number;
-  askEmail?: boolean;
-  askName?: boolean;
-  publicReply?: string[];
+  flowType: FlowType;
   response: KeywordResponse;
   followUp?: KeywordResponse;
+  publicReply?: string[];
+  emailEnabled: boolean;
+  emailTemplate?: string | null;
 }
