@@ -35,6 +35,22 @@ adminRouter.get('/leads', async (_req: Request, res: Response) => {
   }
 });
 
+// GET /admin/leads/:igUserId/interactions
+adminRouter.get('/leads/:igUserId/interactions', async (req: Request, res: Response) => {
+  try {
+    const db = getDb();
+    const rows = await db<{ keyword_id: string; created_at: Date }[]>`
+      SELECT keyword_id, created_at
+      FROM lead_keyword_interactions
+      WHERE ig_user_id = ${req.params.igUserId}
+      ORDER BY created_at DESC
+    `;
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, 'Failed to get lead interactions');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 // ---------- Keyword Rules CRUD ----------
 
 interface KeywordRuleRow {
