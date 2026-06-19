@@ -8,6 +8,7 @@ import {
   setLeadOptOut,
   findLeadsByEmail,
   upsertLead,
+  recordKeywordInteraction,
 } from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 import { sendTextDM, sendButtonDM, getUserProfile } from '../services/instagram.service.js';
@@ -102,7 +103,6 @@ async function handleNameCollection(
 
   await setLeadName(senderId, text);
 
-  // If we already have an email on file, offer to reuse it instead of asking again
   if (lead.email) {
     const masked = maskEmail(lead.email);
     const keywordId = lead.keyword_id ?? '';
@@ -131,7 +131,6 @@ async function handleEmailCollection(
     return;
   }
 
-  // Block if this email already belongs to a different IG account
   try {
     const existing = await findLeadsByEmail(text);
     const usedByAnother = existing.find((l) => l.ig_user_id !== senderId);
@@ -147,12 +146,10 @@ async function handleEmailCollection(
     logger.error({ err }, 'Failed to check duplicate email (continuing)');
   }
 
-  // Valid and not duplicated — save it
   await setLeadEmail(senderId, text);
 
   const rule = getKeywordRules().find((r) => r.id === lead.keyword_id);
 
-  // Send the followUp resource via DM
   if (rule?.followUp) {
     if (rule.followUp.type === 'button' && rule.followUp.buttons?.length) {
       await sendButtonDM(senderId, rule.followUp.text, rule.followUp.buttons);
@@ -171,7 +168,6 @@ async function handleEmailCollection(
     await sendTextDM(senderId, 'Genial, ya quedo guardado tu email! Te vamos a enviar info pronto.');
   }
 
-  // Send custom email only if this keyword has email enabled + an HTML template
   const env = getEnv();
   if (rule?.emailEnabled && rule.emailTemplate && env.RESEND_API_KEY) {
     const username = lead.ig_username ?? 'amigo';
@@ -225,6 +221,7 @@ async function handleKeywordDM(
       source: 'dm',
       keywordId: rule.id,
     });
+    await recordKeywordInteraction(senderId, rule.id);
   } catch (err) {
     logger.error({ err, senderId }, 'Failed to upsert lead (continuing with DM)');
   }
