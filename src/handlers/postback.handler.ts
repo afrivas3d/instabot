@@ -4,7 +4,7 @@ import { getLeadByIgUserId, setLeadStatus } from '../services/lead.service.js';
 import { getKeywordRules } from '../services/keyword.service.js';
 import { sendFollowUp, maskEmail } from './comment.handler.js';
 import { sendTextDM, sendButtonDM } from '../services/instagram.service.js';
-import { sendResourceEmail, sendWelcomeEmail } from '../services/email.service.js';
+import { sendCustomEmail } from '../services/email.service.js';
 import { getEnv } from '../config/env.js';
 
 export async function handlePostback(event: MetaMessagingEvent): Promise<void> {
@@ -34,7 +34,6 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
     const hasUsableEmail = !!lead?.email && !needsName;
 
     if (hasUsableEmail) {
-      // Returning user with all the data we need — confirm/change flow
       const masked = maskEmail(lead!.email!);
       await sendButtonDM(senderId, `Tengo tu email ${masked}. Te mando el link ahi?`, [
         { type: 'postback', title: 'Si, mandame ahi', payload: `confirm_email:${keywordId}` },
@@ -42,11 +41,9 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
       ]);
       await setLeadStatus(senderId, 'email_confirming');
     } else if (needsName) {
-      // Name+email flow and we're missing the name (even if email already exists)
       await sendTextDM(senderId, 'Como te llamas?');
       await setLeadStatus(senderId, 'name_pending');
     } else {
-      // No email yet — ask for it directly
       await sendTextDM(
         senderId,
         'Para que pueda enviarte el link, cual es tu direccion de correo electronico?',
@@ -73,18 +70,21 @@ async function handleConfirmEmail(senderId: string, keywordId: string): Promise<
     // Send followUp DM with the resource
     await sendFollowUp(senderId, rule);
 
-    // Send resource + welcome email
+    // Send custom email only if this keyword has email enabled + an HTML template
     const env = getEnv();
     if (rule?.emailEnabled && rule.emailTemplate && env.RESEND_API_KEY) {
       const username = lead.ig_username ?? 'amigo';
       try {
-        if (rule?.followUp?.buttons?.[0]?.url) {
-          await sendResourceEmail(lead.email, username, rule.followUp.buttons[0].title, rule.followUp.buttons[0].url);
-        }
-        await sendWelcomeEmail(lead.email, username);
+        await sendCustomEmail(
+          lead.email,
+          `Tu link: ${rule.followUp?.buttons?.[0]?.title ?? rule.keyword}`,
+          rule.emailTemplate,
+          { username, name: lead.name ?? username },
+        );
         await setLeadStatus(senderId, 'email_sent');
       } catch (err) {
-        logger.error({ err }, 'Failed to send emails after confirm');
+        logger.error({ err }, 'Failed to send custom email after confirm');
+        await setLeadStatus(senderId, 'email_collected');
       }
     } else {
       await setLeadStatus(senderId, 'email_collected');
