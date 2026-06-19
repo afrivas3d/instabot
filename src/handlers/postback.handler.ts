@@ -30,20 +30,23 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
     const lead = await getLeadByIgUserId(senderId);
     const rule = getKeywordRules().find((r) => r.id === keywordId);
 
-    if (lead?.email) {
-      // Returning user — confirm/change flow
-      const masked = maskEmail(lead.email);
+    const needsName = rule?.flowType === 'name_and_email' && !lead?.name;
+    const hasUsableEmail = !!lead?.email && !needsName;
+
+    if (hasUsableEmail) {
+      // Returning user with all the data we need — confirm/change flow
+      const masked = maskEmail(lead!.email!);
       await sendButtonDM(senderId, `Tengo tu email ${masked}. Te mando el link ahi?`, [
         { type: 'postback', title: 'Si, mandame ahi', payload: `confirm_email:${keywordId}` },
         { type: 'postback', title: 'No, cambiar email', payload: `change_email:${keywordId}` },
       ]);
       await setLeadStatus(senderId, 'email_confirming');
-    } else if (rule?.flowType === 'name_and_email' && !lead?.name) {
-      // New user, name+email flow — ask for name first
+    } else if (needsName) {
+      // Name+email flow and we're missing the name (even if email already exists)
       await sendTextDM(senderId, 'Como te llamas?');
       await setLeadStatus(senderId, 'name_pending');
     } else {
-      // New user — directly ask for email
+      // No email yet — ask for it directly
       await sendTextDM(
         senderId,
         'Para que pueda enviarte el link, cual es tu direccion de correo electronico?',
@@ -51,7 +54,7 @@ async function handleStartEmail(senderId: string, keywordId: string): Promise<vo
       await setLeadStatus(senderId, 'email_pending');
     }
 
-    logger.info({ senderId, keywordId, flowType: rule?.flowType }, 'Start email flow initiated');
+    logger.info({ senderId, keywordId, flowType: rule?.flowType, needsName, hasUsableEmail }, 'Start email flow initiated');
   } catch (err) {
     logger.error({ err, senderId }, 'Error handling start email postback');
   }
