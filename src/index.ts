@@ -13,6 +13,7 @@ import path from 'node:path';
 const env = loadEnv();
 
 const app = express();
+app.set('etag', false);
 
 // Serve static files (admin dashboard)
 app.use(express.static(path.resolve(process.cwd(), 'public')));
