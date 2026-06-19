@@ -445,6 +445,7 @@
             <th>Status</th>
             <th>Opted Out</th>
             <th>Creado</th>
+            <th>Detalle</th>
           </tr>
         </thead>
         <tbody id="leads-body"></tbody>
@@ -726,6 +727,7 @@
         <td>${statusBadge(l.status)}</td>
         <td>${l.opted_out ? '<span class="badge badge-red">sí</span>' : '<span class="badge badge-gray">no</span>'}</td>
         <td>${formatDate(l.created_at)}</td>
+        <td><button class="btn-secondary" onclick="openInteractionsModal('${l.ig_user_id}', '${l.ig_username ?? l.ig_user_id}')">Ver</button></td>
       </tr>
     `).join('');
   }
@@ -1003,6 +1005,55 @@
       showFormError('Error de conexión al guardar.');
     }
   }
+
+  // ---------- LEAD INTERACTIONS ----------
+  async function openInteractionsModal(igUserId, username) {
+    document.getElementById('interactions-title').textContent = `Historial de @${username || igUserId}`;
+    document.getElementById('interactions-list').innerHTML = '';
+    document.getElementById('interactions-empty').style.display = 'none';
+    document.getElementById('interactions-loading').style.display = 'block';
+    document.getElementById('interactions-overlay').style.display = 'flex';
+
+    try {
+      const res = await fetch(`/admin/leads/${igUserId}/interactions`, { headers: authHeaders() });
+      const data = await res.json();
+      document.getElementById('interactions-loading').style.display = 'none';
+
+      if (!data.length) {
+        document.getElementById('interactions-empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('interactions-list').innerHTML = data.map((i) => `
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#0ea5e9;font-weight:600;font-size:0.85rem;">${i.keyword_id}</span>
+          <span style="color:#888;font-size:0.78rem;">${formatDate(i.created_at)}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      document.getElementById('interactions-loading').style.display = 'none';
+      document.getElementById('interactions-empty').style.display = 'block';
+      document.getElementById('interactions-empty').textContent = 'Error al cargar el historial.';
+    }
+  }
+
+  function closeInteractionsModal() {
+    document.getElementById('interactions-overlay').style.display = 'none';
+  }
 </script>
+
+<!-- MODAL: Lead Interactions -->
+<div id="interactions-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;">
+  <div style="background:#161616;border:1px solid #2a2a2a;border-radius:14px;width:100%;max-width:480px;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="color:#fff;font-size:1.1rem;" id="interactions-title">Historial de keywords</h2>
+      <button class="btn-secondary" onclick="closeInteractionsModal()">Cerrar</button>
+    </div>
+    <div id="interactions-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <div id="interactions-empty" style="display:none;color:#666;font-size:0.85rem;text-align:center;padding:20px;">Sin interacciones registradas.</div>
+    <div id="interactions-loading" style="display:none;color:#666;font-size:0.85rem;text-align:center;padding:20px;">Cargando...</div>
+  </div>
+</div>
+
 </body>
 </html>
