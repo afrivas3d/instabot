@@ -11,7 +11,7 @@ import {
 } from '../services/lead.service.js';
 import { logDM } from '../services/dmlog.service.js';
 import { sendTextDM, sendButtonDM, getUserProfile } from '../services/instagram.service.js';
-import { sendWelcomeEmail, sendResourceEmail } from '../services/email.service.js';
+import { sendCustomEmail } from '../services/email.service.js';
 import { getKeywordRules, matchKeyword } from '../services/keyword.service.js';
 import { isOnCooldown, isRateLimited, recordTrigger } from '../services/cooldown.service.js';
 import { renderTemplate } from '../utils/templates.js';
@@ -121,7 +121,7 @@ async function handleEmailCollection(
         { senderId, email: text, otherIgUserId: usedByAnother.ig_user_id },
         'Email already in use by another IG account, blocking',
       );
-      await sendTextDM(senderId, 'Ese email ya esta registrado con otra cuenta de Instagram. Puedes enviarme otro?');
+      await sendTextDM(senderId, 'Ese email ya esta registrado con otra cuenta de Instagram. Podes enviarme otro?');
       return;
     }
   } catch (err) {
@@ -133,6 +133,7 @@ async function handleEmailCollection(
 
   const rule = getKeywordRules().find((r) => r.id === lead.keyword_id);
 
+  // Send the followUp resource via DM
   if (rule?.followUp) {
     if (rule.followUp.type === 'button' && rule.followUp.buttons?.length) {
       await sendButtonDM(senderId, rule.followUp.text, rule.followUp.buttons);
@@ -151,20 +152,24 @@ async function handleEmailCollection(
     await sendTextDM(senderId, 'Genial, ya quedo guardado tu email! Te vamos a enviar info pronto.');
   }
 
+  // Send custom email only if this keyword has email enabled + an HTML template
   const env = getEnv();
-  if (env.RESEND_API_KEY) {
+  if (rule?.emailEnabled && rule.emailTemplate && env.RESEND_API_KEY) {
     const username = lead.ig_username ?? 'amigo';
     try {
-      if (rule?.followUp?.buttons?.[0]?.url) {
-        await sendResourceEmail(text, username, rule.followUp.buttons[0].title, rule.followUp.buttons[0].url);
-      } else if (rule?.followUp?.text) {
-        await sendResourceEmail(text, username, 'Tu recurso', rule.followUp.text);
-      }
-      await sendWelcomeEmail(text, username);
+      await sendCustomEmail(
+        text,
+        `Tu link: ${rule.followUp?.buttons?.[0]?.title ?? rule.keyword}`,
+        rule.emailTemplate,
+        { username, name: lead.name ?? username },
+      );
       await setLeadStatus(senderId, 'email_sent');
     } catch (err) {
-      logger.error({ err, email: text }, 'Failed to send emails');
+      logger.error({ err, email: text }, 'Failed to send custom email');
+      await setLeadStatus(senderId, 'email_collected');
     }
+  } else {
+    await setLeadStatus(senderId, 'email_collected');
   }
 
   logger.info({ senderId, email: text, keywordId: lead.keyword_id }, 'Email collected, followUp sent');
