@@ -84,6 +84,22 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS keyword_rules_enabled_idx ON keyword_rules (enabled)
   `;
 
+  // --- NUEVO BLOQUE AGREGADO AQUÍ ---
+  await db`
+    CREATE TABLE IF NOT EXISTS lead_keyword_interactions (
+      id SERIAL PRIMARY KEY,
+      ig_user_id TEXT NOT NULL,
+      keyword_id TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await db`
+    CREATE INDEX IF NOT EXISTS lead_keyword_interactions_ig_user_id_idx
+    ON lead_keyword_interactions (ig_user_id)
+  `;
+  // ----------------------------------
+
   logger.info('Database initialized');
 }
 
